@@ -8,30 +8,71 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    /*
+    |--------------------------------------------------------------------------
+    | REGISTER USER
+    |--------------------------------------------------------------------------
+    */
+
+    public function registerUser(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
-            'role' => 'nullable|in:user,admin',
+            'password' => 'required|string|min:6',
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => $validated['role'] ?? 'user',
+            'role' => 'user',
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Register success',
-            'token' => $token,
+            'message' => 'User registered',
             'user' => $user,
+            'token' => $token,
         ], 201);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | REGISTER ADMIN
+    |--------------------------------------------------------------------------
+    */
+
+    public function registerAdmin(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+        ]);
+
+        $admin = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'admin',
+        ]);
+
+        $token = $admin->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Admin registered',
+            'user' => $admin,
+            'token' => $token,
+        ], 201);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | LOGIN
+    |--------------------------------------------------------------------------
+    */
 
     public function login(Request $request)
     {
@@ -52,10 +93,16 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login success',
-            'token' => $token,
             'user' => $user,
+            'token' => $token,
         ]);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | LOGOUT
+    |--------------------------------------------------------------------------
+    */
 
     public function logout(Request $request)
     {
@@ -65,6 +112,12 @@ class AuthController extends Controller
             'message' => 'Logout success'
         ]);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ME
+    |--------------------------------------------------------------------------
+    */
 
     public function me(Request $request)
     {

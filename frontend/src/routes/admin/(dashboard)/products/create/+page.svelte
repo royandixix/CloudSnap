@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 
 	const BASE_URL = 'http://localhost:8000/api';
 
@@ -13,13 +15,23 @@
 	let preview: string | null = null;
 	let error: string | null = null;
 
+	// 🔥 ADMIN GUARD
+	onMount(() => {
+		if (!browser) return;
+
+		const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+		if (!user || user.role !== 'admin') {
+			goto('/admin/login');
+		}
+	});
+
 	function handleImage(event: Event) {
 		const target = event.target as HTMLInputElement;
 
 		if (target.files && target.files[0]) {
 			image = target.files[0];
 
-			// cleanup old preview
 			if (preview) URL.revokeObjectURL(preview);
 
 			preview = URL.createObjectURL(image);

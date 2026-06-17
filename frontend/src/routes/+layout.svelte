@@ -1,24 +1,11 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { goto } from "$app/navigation";
-  import { isLoggedIn, isAdmin } from "$lib/auth";
+	import '../app.css';
+	import { onMount } from 'svelte';
+	import { initAuth } from '$lib/stores/auth';
 
-  onMount(() => {
-    const path = window.location.pathname;
-
-    // ADMIN PROTECTION GLOBAL
-    if (path.startsWith("/admin")) {
-      if (!isLoggedIn()) {
-        goto("/login");
-        return;
-      }
-
-      if (!isAdmin()) {
-        goto("/");
-        return;
-      }
-    }
-  });
+	onMount(() => {
+		initAuth();
+	});
 </script>
 
 <slot />

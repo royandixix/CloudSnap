@@ -10,27 +10,33 @@ class ProductController extends Controller
 {
     public function index()
     {
-        return Product::latest()->get()->map(function ($p) {
-            return [
-                'id' => $p->id,
-                'name' => $p->name,
-                'price' => $p->price,
-                'description' => $p->description,
-                'image_url' => Storage::disk('s3')->url($p->image),
-            ];
-        });
+        return response()->json(
+            Product::latest()->get()->map(function ($p) {
+                return [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'price' => $p->price,
+                    'description' => $p->description,
+                    'image_url' => $p->image
+                        ? Storage::disk('s3')->url($p->image)
+                        : null,
+                ];
+            })
+        );
     }
 
     public function show($id)
     {
-        $product = Product::findOrFail($id);
+        $p = Product::findOrFail($id);
 
         return response()->json([
-            'id' => $product->id,
-            'name' => $product->name,
-            'price' => $product->price,
-            'description' => $product->description,
-            'image_url' => Storage::disk('s3')->url($product->image),
+            'id' => $p->id,
+            'name' => $p->name,
+            'price' => $p->price,
+            'description' => $p->description,
+            'image_url' => $p->image
+                ? Storage::disk('s3')->url($p->image)
+                : null,
         ]);
     }
 
@@ -80,7 +86,9 @@ class ProductController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        Storage::disk('s3')->delete($product->image);
+        if ($product->image) {
+            Storage::disk('s3')->delete($product->image);
+        }
 
         $product->delete();
 
